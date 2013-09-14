@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+		<file>Tunisuino.hex</file>
+		<file>tunisuino.icns</file>
+		<file>Tunisuino.inf</file>
+		<file>flags-tunisia.ico</file>
+
+	</qresource>
+</RCC>
