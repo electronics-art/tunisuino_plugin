@@ -12,7 +12,12 @@
         #define FILTER "(*.exe)"
         #define FONTSIZE 10
     #else
-        #error "OS not supported!
+    	#ifdef Q_OS_LINUX
+       		#define FILTER "(*)"
+        	#define FONTSIZE 10
+    	#else
+        	#error "OS not supported!"
+    	#endif
     #endif
 #endif
 
