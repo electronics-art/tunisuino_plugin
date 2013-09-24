@@ -1,0 +1,7 @@
+Requirement :
+- Qt
+
+To install :
+1- qmake
+2- make
+3- ./tunisuino_plugin
