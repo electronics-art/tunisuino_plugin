@@ -22,8 +22,10 @@
 #endif
 
 const QString MainWindow::boards_txt_path = QString("/hardware/arduino/boards.txt");
+const QString MainWindow::boards_txt_path_1_6 = QString("/hardware/arduino/avr/boards.txt");
 const QString MainWindow::usbcore_cpp_path = QString("/hardware/arduino/cores/arduino/USBCore.cpp");
 const QString MainWindow::caterina_path = QString("/hardware/arduino/bootloaders/caterina/");
+const QString MainWindow::caterina_path_1_6 = QString("/hardware/arduino/avr/bootloaders/caterina/");
 const QString MainWindow::tunisuino_board = QString("\n##############################################################\n"
                                                       "\n"
                                                       "tunisuino.name=Tunisuino\n"
@@ -44,6 +46,35 @@ const QString MainWindow::tunisuino_board = QString("\n#########################
                                                       "tunisuino.build.pid=0x1920\n"
                                                       "tunisuino.build.core=arduino\n"
                                                       "tunisuino.build.variant=leonardo\n");
+const QString MainWindow::tunisuino_board_1_6 = QString("\n##############################################################\n"
+                                                        "\n"
+                                                        "tunisuino.name=Tunisuino\n"
+                                                        "tunisuino.vid.0=0x1d50\n"
+                                                        "tunisuino.pid.0=0x1920\n"
+                                                        "tunisuino.upload.tool=avrdude\n"
+                                                        "tunisuino.upload.protocol=avr109\n"
+                                                        "tunisuino.upload.maximum_size=28672\n"
+                                                        "tunisuino.upload.maximum_data_size=2560\n"
+                                                        "tunisuino.upload.speed=57600\n"
+                                                        "tunisuino.upload.disable_flushing=true\n"
+                                                        "tunisuino.upload.use_1200bps_touch=true\n"
+                                                        "tunisuino.upload.wait_for_upload_port=true\n"
+                                                        "tunisuino.bootloader.tool=avrdude\n"
+                                                        "tunisuino.bootloader.low_fuses=0xff\n"
+                                                        "tunisuino.bootloader.high_fuses=0xd8\n"
+                                                        "tunisuino.bootloader.extended_fuses=0xcb\n"
+                                                        "tunisuino.bootloader.file=caterina/Tunisuino.hex\n"
+                                                        "tunisuino.bootloader.unlock_bits=0x3F\n"
+                                                        "tunisuino.bootloader.lock_bits=0x2F\n"
+                                                        "tunisuino.build.mcu=atmega32u4\n"
+                                                        "tunisuino.build.f_cpu=16000000L\n"
+                                                        "tunisuino.build.vid=0x1d50\n"
+                                                        "tunisuino.build.pid=0x1920\n"
+                                                        "tunisuino.build.usb_product=\"Tunisuino\"\n"
+                                                        "tunisuino.build.board=AVR_LEONARDO\n"
+                                                        "tunisuino.build.core=arduino\n"
+                                                        "tunisuino.build.variant=leonardo\n"
+                                                        "tunisuino.build.extra_flags={build.usb_flags}\n");
 const QString MainWindow::tunisuino_iproduct = QString("#elif USB_PID == 0x1920\n"
                                                        "\t'T','u','n','i','s','u','i','n','o',' ',' ',' ',' ',' ',' ',' '\n");
 const QString MainWindow::tunisuino_imanufacture = QString("#elif USB_VID == 0x1d50\n"
@@ -86,7 +117,7 @@ void MainWindow::on_install_button_clicked()
     basepath = basepath.left(basepath.lastIndexOf("/"));
 #endif
     basepath.append(PREDIRS);
-
+    int update = 0;
 
     /*
      *  Patch boards.txt
@@ -95,6 +126,14 @@ void MainWindow::on_install_button_clicked()
     QString boards_txt_fullpath = basepath;
     boards_txt_fullpath.append(&boards_txt_path);
     QFile boards_txt(boards_txt_fullpath);
+    if (!boards_txt.exists()) {
+        boards_txt_fullpath = basepath;
+        boards_txt_fullpath.append(&boards_txt_path_1_6);
+        boards_txt.setFileName(boards_txt_fullpath);
+        update = 1;
+    }
+
+
     if (!boards_txt.exists()) {
         print_warning(boards_txt_fullpath.append(" could not be found, please check the Arduino IDE path."));
         return;
@@ -114,7 +153,10 @@ void MainWindow::on_install_button_clicked()
             return;
         }
         ostream.setDevice(&boards_txt);
-        strfile.insert(strfile.indexOf("###########################") - 1, tunisuino_board);
+        if (update == 0)
+            strfile.insert(strfile.indexOf("###########################") - 1, tunisuino_board);
+        else
+            strfile.insert(strfile.indexOf("###########################") - 1, tunisuino_board_1_6);
         ostream << strfile;
         boards_txt.close();
         print_info(boards_txt_fullpath.append(" has been patched successfully..."));
@@ -124,6 +166,7 @@ void MainWindow::on_install_button_clicked()
     /*
      *  Patch USBCore.cpp
      */
+    if (update == 0) {
 
     QString usbcore_cpp_fullpath = basepath;
     usbcore_cpp_fullpath.append(&usbcore_cpp_path);
@@ -163,14 +206,17 @@ void MainWindow::on_install_button_clicked()
         usbcore_cpp.close();
         print_info(usbcore_cpp_fullpath.append(" has been patched successfully..."));
     }
-
+    }
 
     /*
      *  Copy Tunisuino.hex to bootloaders
      */
 
     QString caterina_fullpath = basepath;
-    caterina_fullpath.append(&caterina_path).append("Tunisuino.hex");
+    if (update == 0)
+        caterina_fullpath.append(&caterina_path).append("Tunisuino.hex");
+    else
+        caterina_fullpath.append(&caterina_path_1_6).append("Tunisuino.hex");
     QFile caterina(caterina_fullpath);
     if (caterina.exists()) {
         print_info(caterina_fullpath.append(" is already installed."));
