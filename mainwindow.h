@@ -34,7 +34,9 @@ private:
     static const QString tunisuino_board;
     static const QString tunisuino_iproduct;
     static const QString tunisuino_imanufacture;
-
+    static const QString boards_txt_path_1_6;
+    static const QString caterina_path_1_6;
+    static const QString tunisuino_board_1_6;
 };
 
 #endif // MAINWINDOW_H
